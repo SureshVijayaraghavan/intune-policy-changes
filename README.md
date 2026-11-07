@@ -23,26 +23,37 @@ Public: changes/*.json  ──repository_dispatch──►  Private: self-hosted
 
 ## How to request a change
 
-1. Add or edit a JSON file under `changes/` (see `changes/example-ios-compliance-update.json`).
+1. Add or edit a JSON file under `changes/` (see the examples there).
 2. Merge/push to `main`.
 3. The workflow dispatches event `compliance-policy-update` to the private executor repo.
 
-### Change request shape
+### Change request shape (Android fully managed)
+
+Maps Intune UI fields → Graph `androidDeviceOwnerCompliancePolicy` properties.
+See `changes/example-android-compliance-update.json`.
 
 ```json
 {
   "action": "updateCompliancePolicy",
-  "platform": "iOS",
+  "platform": "Android",
   "policyId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
   "patch": {
-    "description": "Updated from public intent repo"
+    "@odata.type": "#microsoft.graph.androidDeviceOwnerCompliancePolicy",
+    "osMinimumVersion": "13.0",
+    "minAndroidSecurityPatchLevel": "2026-07-05"
   }
 }
 ```
 
+| Intune UI | Graph property |
+| --- | --- |
+| Minimum OS version | `osMinimumVersion` |
+| Minimum security patch level | `minAndroidSecurityPatchLevel` |
+
 - `platform`: `iOS` or `Android` (hint for operators / future routing)
 - `policyId`: Intune `deviceCompliancePolicy` GUID
-- `patch`: JSON body fields sent to Graph `PATCH`
+- `patch`: JSON body fields sent to Graph `PATCH` (include `@odata.type` for typed Android/iOS policies)
+
 
 ## One-time setup (dispatch token)
 

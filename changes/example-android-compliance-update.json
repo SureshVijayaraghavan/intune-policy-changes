@@ -3,6 +3,9 @@
   "platform": "Android",
   "policyId": "REPLACE_WITH_INTUNE_POLICY_GUID",
   "patch": {
-    "description": "POC update from intune-policy-changes (Android)"
+    "@odata.type": "#microsoft.graph.androidDeviceOwnerCompliancePolicy",
+    "osMinimumVersion": "13.0",
+    "minAndroidSecurityPatchLevel": "2026-07-05",
+    "description": "POC update from intune-policy-changes (Android fully managed)"
   }
 }
