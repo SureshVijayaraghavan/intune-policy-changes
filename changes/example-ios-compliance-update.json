@@ -1,0 +1,8 @@
+{
+  "action": "updateCompliancePolicy",
+  "platform": "iOS",
+  "policyId": "REPLACE_WITH_INTUNE_POLICY_GUID",
+  "patch": {
+    "description": "POC update from intune-policy-changes (iOS)"
+  }
+}

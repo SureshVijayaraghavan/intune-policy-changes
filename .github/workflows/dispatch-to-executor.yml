@@ -1,0 +1,112 @@
+name: Dispatch change to executor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'changes/**/*.json'
+  workflow_dispatch:
+    inputs:
+      change_file:
+        description: Path to a change JSON under changes/ (e.g. changes/example-ios-compliance-update.json)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Resolve change files
+        id: resolve
+        env:
+          MANUAL_FILE: ${{ inputs.change_file }}
+        run: |
+          set -euo pipefail
+          files=()
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            files+=("${MANUAL_FILE}")
+          else
+            while IFS= read -r f; do
+              [ -n "$f" ] && files+=("$f")
+            done < <(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- 'changes/**/*.json' || true)
+            # First push / shallow edge case: dispatch all change JSONs that are not placeholders-only if diff empty
+            if [ ${#files[@]} -eq 0 ]; then
+              while IFS= read -r f; do
+                files+=("$f")
+              done < <(find changes -type f -name '*.json' | sort)
+            fi
+          fi
+
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No change files to dispatch."
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          printf '%s\n' "${files[@]}" > /tmp/change-files.txt
+          echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
+          echo "Resolved files:"
+          cat /tmp/change-files.txt
+
+      - name: Dispatch each change to private executor
+        if: steps.resolve.outputs.count != '0'
+        env:
+          GH_TOKEN: ${{ secrets.EXECUTOR_DISPATCH_TOKEN }}
+          EXECUTOR_REPO: ${{ vars.EXECUTOR_REPO }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GH_TOKEN}" ]; then
+            echo "Missing secret EXECUTOR_DISPATCH_TOKEN" >&2
+            exit 1
+          fi
+          EXECUTOR_REPO="${EXECUTOR_REPO:-SureshVijayaraghavan/intune-cicd-poc}"
+
+
+          while IFS= read -r file; do
+            echo "Processing $file"
+            if [ ! -f "$file" ]; then
+              echo "File not found: $file" >&2
+              exit 1
+            fi
+
+            action=$(jq -r '.action // empty' "$file")
+            if [ "$action" != "updateCompliancePolicy" ]; then
+              echo "Skipping unsupported action '$action' in $file"
+              continue
+            fi
+
+            platform=$(jq -r '.platform' "$file")
+            policyId=$(jq -r '.policyId' "$file")
+            patch=$(jq -c '.patch' "$file")
+
+            if [ -z "$policyId" ] || [ "$policyId" = "REPLACE_WITH_INTUNE_POLICY_GUID" ]; then
+              echo "Skipping $file — set a real policyId before dispatching."
+              continue
+            fi
+
+            payload=$(jq -n \
+              --arg platform "$platform" \
+              --arg policyId "$policyId" \
+              --argjson patch "$patch" \
+              --arg sourceFile "$file" \
+              --arg sourceRepo "$GITHUB_REPOSITORY" \
+              --arg sourceSha "$GITHUB_SHA" \
+              '{platform:$platform, policyId:$policyId, patch:$patch, sourceFile:$sourceFile, sourceRepo:$sourceRepo, sourceSha:$sourceSha}')
+
+            echo "Dispatching compliance-policy-update for policyId=$policyId"
+            jq -n \
+              --arg event_type "compliance-policy-update" \
+              --argjson client_payload "$payload" \
+              '{event_type:$event_type, client_payload:$client_payload}' \
+              | gh api --method POST "repos/${EXECUTOR_REPO}/dispatches" --input -
+
+            echo "Dispatched from $file"
+          done < /tmp/change-files.txt
