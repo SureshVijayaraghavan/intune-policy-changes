@@ -4,8 +4,8 @@
   "policyId": "d3338a62-8d48-438b-9a06-fb225146f571",
   "patch": {
     "@odata.type": "#microsoft.graph.androidWorkProfileCompliancePolicy",
-    "osMinimumVersion": "14.0",
-    "minAndroidSecurityPatchLevel": "2026-08-05",
+    "osMinimumVersion": "15.0",
+    "minAndroidSecurityPatchLevel": "2026-09-05",
     "description": "Updated via public intune-policy-changes dispatch"
   }
 }
