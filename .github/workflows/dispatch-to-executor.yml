@@ -34,19 +34,25 @@ jobs:
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             files+=("${MANUAL_FILE}")
           else
+            echo "git rev-parse HEAD     : $(git rev-parse HEAD)"
+            echo "git rev-parse HEAD~1   : $(git rev-parse HEAD~1 2>/dev/null || echo missing)"
+            echo "Changed JSON candidates:"
+            git diff --name-only --diff-filter=AM HEAD~1 HEAD -- changes || true
+
+            # Avoid ** pathspec globs (can match nothing) and never fall back to all files.
             while IFS= read -r f; do
-              [ -n "$f" ] && files+=("$f")
-            done < <(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- 'changes/**/*.json' || true)
-            # First push / shallow edge case: dispatch all change JSONs that are not placeholders-only if diff empty
-            if [ ${#files[@]} -eq 0 ]; then
-              while IFS= read -r f; do
+              if [[ "$f" == changes/* ]] && [[ "$f" == *.json ]]; then
                 files+=("$f")
-              done < <(find changes -type f -name '*.json' | sort)
+              fi
+            done < <(git diff --name-only --diff-filter=AM HEAD~1 HEAD -- changes || true)
+
+            if [ ${#files[@]} -gt 0 ]; then
+              mapfile -t files < <(printf '%s\n' "${files[@]}" | awk 'NF && !seen[$0]++')
             fi
           fi
 
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No change files to dispatch."
+            echo "No changed JSON files under changes/ in this push. Not dispatching."
             echo "count=0" >> "$GITHUB_OUTPUT"
             exit 0
           fi
