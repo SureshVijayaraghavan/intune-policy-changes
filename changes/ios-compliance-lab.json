@@ -5,6 +5,6 @@
   "patch": {
     "@odata.type": "#microsoft.graph.iosCompliancePolicy",
     "osMinimumVersion": "17.0",
-    "description": "Updated via public intune-policy-changes dispatch (iOS)"
+    "description": "Dual-flow test via APIM public repo (iOS)"
   }
 }
