@@ -4,7 +4,7 @@
   "policyId": "0bc296b3-5dd6-4f7b-975d-5fdd07535f5b",
   "patch": {
     "@odata.type": "#microsoft.graph.windows10CompliancePolicy",
-    "osMinimumVersion": "10.0.19045.0",
+    "osMinimumVersion": "10.0.22632",
     "description": "Updated via public intune-policy-changes dispatch (Windows)"
   }
 }
