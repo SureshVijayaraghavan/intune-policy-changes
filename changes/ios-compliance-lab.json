@@ -1,0 +1,10 @@
+{
+  "action": "updateCompliancePolicy",
+  "platform": "iOS",
+  "policyId": "11b89646-b556-4091-b42a-a0ab5f41a02e",
+  "patch": {
+    "@odata.type": "#microsoft.graph.iosCompliancePolicy",
+    "osMinimumVersion": "17.0",
+    "description": "Updated via public intune-policy-changes dispatch (iOS)"
+  }
+}

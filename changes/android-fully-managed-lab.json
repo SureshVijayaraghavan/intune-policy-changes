@@ -1,0 +1,11 @@
+{
+  "action": "updateCompliancePolicy",
+  "platform": "Android",
+  "policyId": "02e1e6c3-c1c8-401f-9b29-e6119e07e6e4",
+  "patch": {
+    "@odata.type": "#microsoft.graph.androidDeviceOwnerCompliancePolicy",
+    "osMinimumVersion": "14.0",
+    "minAndroidSecurityPatchLevel": "2026-10-05",
+    "description": "Updated via public intune-policy-changes dispatch (Fully Managed)"
+  }
+}

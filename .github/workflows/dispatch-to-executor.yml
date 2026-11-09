@@ -99,8 +99,8 @@ jobs:
             if [ -z "$platform" ]; then
               echo "::error file=$file::Missing required string field: platform"
               failed=1
-            elif [ "$platform" != "iOS" ] && [ "$platform" != "Android" ]; then
-              echo "::error file=$file::platform must be iOS or Android (got '$platform')"
+            elif [ "$platform" != "iOS" ] && [ "$platform" != "Android" ] && [ "$platform" != "Windows" ]; then
+              echo "::error file=$file::platform must be iOS, Android, or Windows (got '$platform')"
               failed=1
             fi
 

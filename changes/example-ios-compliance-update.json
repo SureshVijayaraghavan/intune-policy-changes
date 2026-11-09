@@ -3,6 +3,8 @@
   "platform": "iOS",
   "policyId": "REPLACE_WITH_INTUNE_POLICY_GUID",
   "patch": {
+    "@odata.type": "#microsoft.graph.iosCompliancePolicy",
+    "osMinimumVersion": "17.0",
     "description": "POC update from intune-policy-changes (iOS)"
   }
 }
