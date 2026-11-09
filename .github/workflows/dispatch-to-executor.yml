@@ -56,6 +56,79 @@ jobs:
           echo "Resolved files:"
           cat /tmp/change-files.txt
 
+      - name: Validate change JSON syntax and schema
+        if: steps.resolve.outputs.count != '0'
+        run: |
+          set -euo pipefail
+          failed=0
+
+          while IFS= read -r file; do
+            echo "Validating $file"
+
+            if [ ! -f "$file" ]; then
+              echo "::error file=$file::File not found"
+              failed=1
+              continue
+            fi
+
+            if ! jq empty "$file" 2>/tmp/jq-err; then
+              echo "::error file=$file::Invalid JSON syntax: $(tr '\n' ' ' </tmp/jq-err)"
+              failed=1
+              continue
+            fi
+
+            if ! jq -e 'type == "object"' "$file" >/dev/null; then
+              echo "::error file=$file::Root value must be a JSON object"
+              failed=1
+              continue
+            fi
+
+            action=$(jq -r '.action // empty' "$file")
+            platform=$(jq -r '.platform // empty' "$file")
+            policyId=$(jq -r '.policyId // empty' "$file")
+            patchType=$(jq -r '.patch | type' "$file")
+
+            if [ -z "$action" ]; then
+              echo "::error file=$file::Missing required string field: action"
+              failed=1
+            elif [ "$action" != "updateCompliancePolicy" ]; then
+              echo "::error file=$file::Unsupported action '$action' (expected updateCompliancePolicy)"
+              failed=1
+            fi
+
+            if [ -z "$platform" ]; then
+              echo "::error file=$file::Missing required string field: platform"
+              failed=1
+            elif [ "$platform" != "iOS" ] && [ "$platform" != "Android" ]; then
+              echo "::error file=$file::platform must be iOS or Android (got '$platform')"
+              failed=1
+            fi
+
+            if [ -z "$policyId" ]; then
+              echo "::error file=$file::Missing required string field: policyId"
+              failed=1
+            fi
+
+            if [ "$patchType" != "object" ]; then
+              echo "::error file=$file::patch must be a JSON object (got $patchType)"
+              failed=1
+            elif ! jq -e '.patch["@odata.type"] | type == "string" and length > 0' "$file" >/dev/null; then
+              echo "::error file=$file::patch.@odata.type is required and must be a non-empty string"
+              failed=1
+            fi
+
+            if jq empty "$file" >/dev/null 2>&1; then
+              echo "Checked: $file"
+            fi
+          done < /tmp/change-files.txt
+
+          if [ "$failed" -ne 0 ]; then
+            echo "JSON validation failed — private executor will not be triggered." >&2
+            exit 1
+          fi
+
+          echo "All change files passed JSON validation."
+
       - name: Dispatch each change to private executor
         if: steps.resolve.outputs.count != '0'
         env:
