@@ -4,7 +4,7 @@
   "policyId": "0bc296b3-5dd6-4f7b-975d-5fdd07535f5b",
   "patch": {
     "@odata.type": "#microsoft.graph.windows10CompliancePolicy",
-    "osMinimumVersion": "10.0.22632",
+    "osMinimumVersion": "10.0.26100",
     "description": "Dual-flow test via APIM public repo (Windows)"
   }
 }
