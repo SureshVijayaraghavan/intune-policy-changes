@@ -5,6 +5,6 @@
   "patch": {
     "@odata.type": "#microsoft.graph.windows10CompliancePolicy",
     "osMinimumVersion": "10.0.26100",
-    "description": "Dual-flow test via APIM public repo (Windows)"
+    "description": "APIM-flow test: Windows osMinimumVersion 10.0.26100"
   }
 }
