@@ -5,7 +5,7 @@
     "patch":  {
                   "@odata.type":  "#microsoft.graph.androidWorkProfileCompliancePolicy",
                   "osMinimumVersion":  "16.0",
-                  "minAndroidSecurityPatchLevel":  "2026-11-18",
-                  "description":  "Cert-path smoke thumbprint fix 2026-11-15 22:12"
+                  "minAndroidSecurityPatchLevel":  "2026-12-13",
+                  "description":  "Cert-path APIM MI smoke success 2026-11-15 22:15"
               }
 }
