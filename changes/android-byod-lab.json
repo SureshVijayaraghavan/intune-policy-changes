@@ -5,7 +5,7 @@
     "patch":  {
                   "@odata.type":  "#microsoft.graph.androidWorkProfileCompliancePolicy",
                   "osMinimumVersion":  "16.0",
-                  "minAndroidSecurityPatchLevel":  "2026-11-16",
-                  "description":  "Cert-path smoke retry 2026-11-15 21:55 runner online"
+                  "minAndroidSecurityPatchLevel":  "2026-11-17",
+                  "description":  "Cert-path smoke after runner recover 2026-11-15 22:08"
               }
 }
